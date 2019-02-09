@@ -37,7 +37,7 @@ public class AI
                 if (!world.getMap().getCell(i, j).isWall()) {
                     for(Hero hero: world.getMyHeroes()){
                         if(hero.getCurrentCell().equals(world.getMap().getCell(i,j))){
-                            System.out.print(ANSI_GREEN+"H "+ANSI_RESET);
+                            System.out.print(ANSI_GREEN+hero.getId()+ANSI_RESET);
                             check[i][j]=true;
                         }
                     }
