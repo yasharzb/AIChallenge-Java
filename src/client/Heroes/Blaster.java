@@ -26,7 +26,7 @@ public class Blaster {
         isEnemyInBombRange,
         stayInPlace
     }
-    private File file=new File("/home/yashyzb/Downloads/Compressed/AIC19-Client-Java-1.0/Blaster_Movement_Weights");
+    private File file=new File("Blaster/Blaster_Movement_Weights");
     private double[] movementWeightAlloc=new double[14];
     @SuppressWarnings("Duplicates")
     public double[][] setMovementWeight(Hero hero, World world, Cell objectivePoint) {
@@ -172,7 +172,7 @@ public class Blaster {
     private File dodgeFile=new File("Blaster/Blaster_Dodge_Weights");
     private double[] actionWeightAlloc=new double[17];
     @SuppressWarnings("Duplicates")
-    public double[][][] setActionWeight(Hero hero, World world, Cell objectivePoint) {
+    public double[][][] setActionWeight(Hero hero, World world) {
         int counter=0;
         Scanner attackScanner,bombScanner,dodgeScanner;
         try {
@@ -207,8 +207,8 @@ public class Blaster {
         }
         boolean heroPercussionFlag=false;
         double[][][] result = new double[world.getMap().getRowNum()][world.getMap().getColumnNum()][3];
-        for (int i = 0; i <= world.getMap().getRowNum(); i++) {
-            for (int j = 0; j <= world.getMap().getColumnNum(); j++) {
+        for (int i = 0; i < world.getMap().getRowNum(); i++) {
+            for (int j = 0; j < world.getMap().getColumnNum(); j++) {
                 if (world.getMap().getCell(i, j).isWall()) {
                     result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] = result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3]
                             = result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] = -100D;
@@ -223,6 +223,9 @@ public class Blaster {
                     result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] = result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3]
                             = result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] = -100D;
                 }
+
+                //Attack
+
                 for (Hero opp_hero : world.getOppHeroes()) {
                     if (opp_hero.getCurrentCell().equals(world.getMap().getCell(i, j))) {
                         switch (opp_hero.getName()) {
@@ -305,49 +308,46 @@ public class Blaster {
                         }
                     }
                 }
+
+                //Dodge
+
                 for (Hero opp_hero : world.getOppHeroes()) {
-                    for (int ab = 0; ab < 3; ab++) {
-                        switch (opp_hero.getAbilities()[ab].getName()) {
-                            case BLASTER_ATTACK:
-                                if (world.isInVision(opp_hero.getCurrentCell(), world.getMap().getCell(i, j))) {
-//                                    if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) <= 5)
-/*
-                                        result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] +=
-                                                actionWeightAlloc[Dodge..ordinal()%3];
-*/
-                                }
+                    switch (opp_hero.getName()) {
+                        case SENTRY:
+                            if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
+                                    && hero.getCurrentHP() < 51)
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryLOFandLethalandBeamOffCD.ordinal()];
+                            if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
+                                    && world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 8 && hero.getCurrentHP() < 31)
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryAttackRange.ordinal()];
+                            break;
+                        case BLASTER:
+                            if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 6 && hero.getCurrentHP() < 41)
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
+                            if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 5 && hero.getCurrentHP() < 21)
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
+                            break;
+                    }
+                    for (Cell objcell : world.getMap().getObjectiveZone()) {
+                        if (objcell.getRow() == i && objcell.getColumn() == j)
+                            result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInObjective.ordinal()];
+
+                    }
+                    for (Hero enemyHero: world.getOppHeroes())
+                    {
+                        switch (enemyHero.getName())
+                        {
+                            case HEALER:
+                                if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
+                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isHealerinLOF.ordinal()];
                                 break;
-                            case BLASTER_BOMB:
-//                                if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) <= 7)
-/*
-                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] +=
-                                            actionWeightAlloc[AbilityName.BLASTER_DODGE.ordinal()%3];
-*/
+                            case BLASTER:
+                                if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
+                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isBlasterinLOF.ordinal()];
                                 break;
-                            case SENTRY_ATTACK:
-                                if (world.isInVision(opp_hero.getCurrentCell(), world.getMap().getCell(i, j))) {
-//                                    if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) <= 7)
-/*
-                                        result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] +=
-                                                actionWeightAlloc[Dodge.ordinal()%3];
-*/
-                                }
-                                break;
-                            case SENTRY_RAY:
-                                if (world.isInVision(opp_hero.getCurrentCell(), world.getMap().getCell(i, j))) {
-                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] +=
-                                            actionWeightAlloc[AbilityName.BLASTER_DODGE.ordinal()%3];
-                                }
-                                break;
-                            case HEALER_ATTACK:
-                                if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) <= 4)
-                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] +=
-                                            actionWeightAlloc[AbilityName.BLASTER_DODGE.ordinal()%3];
-                                break;
-                            case GUARDIAN_ATTACK:
-                                if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) <= 2)
-                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] +=
-                                            actionWeightAlloc[AbilityName.BLASTER_DODGE.ordinal()%3];
+                            case SENTRY:
+                                if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
+                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isSentryinLOF.ordinal()];
                                 break;
                         }
                     }
