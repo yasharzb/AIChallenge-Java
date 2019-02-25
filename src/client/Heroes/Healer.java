@@ -164,7 +164,7 @@ public class Healer {
     private File dodgeFile=new File("Healer/Healer_Dodge_Weights");
     private double[] actionWeightAlloc=new double[17];
     @SuppressWarnings("Duplicates")
-    public double[][][] setActionWeight(Hero hero, World world) {
+    public double[][][] setActionWeight(Hero hero, World world,Cell objectivePoint) {
         int counter=0;
         Scanner attackScanner,healScanner,dodgeScanner;
         try {
@@ -201,8 +201,8 @@ public class Healer {
         }
         boolean heroPercussionFlag=false;
         double[][][] result = new double[world.getMap().getRowNum()][world.getMap().getColumnNum()][3];
-        for (int i = 0; i < world.getMap().getRowNum(); i++) {
-            for (int j = 0; j < world.getMap().getColumnNum(); j++) {
+        for(int i=objectivePoint.getRow();i<objectivePoint.getRow()+9;i++){
+            for(int j=objectivePoint.getColumn();j<objectivePoint.getColumn()+9;j++){
                 if (world.getMap().getCell(i, j).isWall()) {
                     result[i][j][AbilityName.HEALER_ATTACK.ordinal()%3] = result[i][j][AbilityName.HEALER_HEAL.ordinal()%3]
                             = result[i][j][AbilityName.HEALER_DODGE.ordinal()%3] = -100D;
