@@ -170,7 +170,9 @@ public class Blaster {
     private File attackFile=new File("Blaster/Blaster_Attack_Weights");
     private File bombFile=new File("Blaster/Blaster_Bomb_Weights");
     private File dodgeFile=new File("Blaster/Blaster_Dodge_Weights");
-    private double[] actionWeightAlloc=new double[17];
+    private double[] attackWeightAlloc=new double[5];
+    private double[] bombWeightAlloc=new double[5];
+    private double[] dodgeWeightAlloc=new double[7];
     @SuppressWarnings("Duplicates")
     public double[][][] setActionWeight(Hero hero, World world,Cell objectivePoint) {
         int counter=0;
@@ -178,27 +180,29 @@ public class Blaster {
         try {
             attackScanner=new Scanner(attackFile);
             while (attackScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=attackScanner.nextDouble();
+                attackWeightAlloc[counter]=attackScanner.nextDouble();
                 counter++;
             }
         }
         catch (FileNotFoundException error){
             error.printStackTrace();
         }
+        counter=0;
         try {
             bombScanner=new Scanner(bombFile);
             while (bombScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=bombScanner.nextDouble();
+                bombWeightAlloc[counter]=bombScanner.nextDouble();
                 counter++;
             }
         }
         catch (FileNotFoundException error){
             error.printStackTrace();
         }
+        counter=0;
         try {
             dodgeScanner=new Scanner(dodgeFile);
             while (dodgeScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=dodgeScanner.nextDouble();
+                dodgeWeightAlloc[counter]=dodgeScanner.nextDouble();
                 counter++;
             }
         }
@@ -207,21 +211,12 @@ public class Blaster {
         }
         boolean heroPercussionFlag=false;
         double[][][] result = new double[world.getMap().getRowNum()][world.getMap().getColumnNum()][3];
-        for(int i=objectivePoint.getRow();i<objectivePoint.getRow()+9;i++){
-            for(int j=objectivePoint.getColumn();j<objectivePoint.getColumn()+9;j++){
+        for(int i=objectivePoint.getRow();i<objectivePoint.getRow()+5;i++){
+            for(int j=objectivePoint.getColumn();j<objectivePoint.getColumn()+5;j++){
                 if (world.getMap().getCell(i, j).isWall()) {
                     result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] = result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3]
                             = result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] = -100D;
                     continue;
-                }
-                outer:
-                for (Hero my_hero : world.getMyHeroes()) {
-                    for (Hero opp_hero : world.getOppHeroes()) {
-                        if (opp_hero.getCurrentCell().equals(my_hero.getCurrentCell()))
-                            continue outer;
-                    }
-                    result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] = result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3]
-                            = result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3] = -100D;
                 }
 
                 //Attack
@@ -234,18 +229,18 @@ public class Blaster {
                                     if (world.isInVision(opp_hero.getCurrentCell(), hero.getCurrentCell()))
                                         if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
                                             result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isBlasterInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isBlasterInRange.ordinal()];
                                             if (opp_hero.getCurrentHP() <= 20)
                                                 result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if (hero.getAbilities()[AbilityName.BLASTER_BOMB.ordinal()%3].getRemCooldown() == 0)
                                     if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
                                         result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
-                                                actionWeightAlloc[Bomb.isBlasterInRange.ordinal()];
+                                                bombWeightAlloc[Bomb.isBlasterInRange.ordinal()];
                                         if (opp_hero.getCurrentHP() <= 40)
                                             result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
-                                                    actionWeightAlloc[Bomb.isLethalN.ordinal()];
+                                                    bombWeightAlloc[Bomb.isLethalN.ordinal()];
                                     }
                                 break;
                             case SENTRY:
@@ -253,18 +248,18 @@ public class Blaster {
                                     if (world.isInVision(opp_hero.getCurrentCell(), hero.getCurrentCell()))
                                         if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
                                             result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isSentryInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isSentryInRange.ordinal()];
                                             if (opp_hero.getCurrentHP() <= 20)
                                                 result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if (hero.getAbilities()[AbilityName.BLASTER_BOMB.ordinal()%3].getRemCooldown() == 0)
                                     if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
                                         result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
-                                                actionWeightAlloc[Bomb.isSentryInRange.ordinal()];
+                                                bombWeightAlloc[Bomb.isSentryInRange.ordinal()];
                                         if (opp_hero.getCurrentHP() <= 40)
                                             result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
-                                                    actionWeightAlloc[Bomb.isLethalN.ordinal()];
+                                                    bombWeightAlloc[Bomb.isLethalN.ordinal()];
                                     }
                                 break;
                             case HEALER:
@@ -272,18 +267,18 @@ public class Blaster {
                                     if (world.isInVision(opp_hero.getCurrentCell(), hero.getCurrentCell()))
                                         if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
                                             result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isHealerInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isHealerInRange.ordinal()];
                                             if (opp_hero.getCurrentHP() <= 20)
                                                 result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if (hero.getAbilities()[AbilityName.BLASTER_BOMB.ordinal()%3].getRemCooldown() == 0)
                                     if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
                                         result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
-                                                actionWeightAlloc[Bomb.isHealerInRange.ordinal()];
+                                                bombWeightAlloc[Bomb.isHealerInRange.ordinal()];
                                         if (opp_hero.getCurrentHP() <= 40)
                                             result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
-                                                    actionWeightAlloc[Bomb.isLethalN.ordinal()];
+                                                    bombWeightAlloc[Bomb.isLethalN.ordinal()];
                                     }
                                 break;
                             case GUARDIAN:
@@ -291,18 +286,18 @@ public class Blaster {
                                     if (world.isInVision(opp_hero.getCurrentCell(), hero.getCurrentCell()))
                                         if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
                                             result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isGuardianInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isGuardianInRange.ordinal()];
                                             if (opp_hero.getCurrentHP() <= 20)
                                                 result[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if (hero.getAbilities()[AbilityName.BLASTER_BOMB.ordinal()%3].getRemCooldown() == 0)
                                     if (world.manhattanDistance(opp_hero.getCurrentCell(), hero.getCurrentCell()) <= 5) {
-                                        result[i][j][AbilityName.BLASTER_BOMB.ordinal()] +=
-                                                actionWeightAlloc[Bomb.isGuardianInRange.ordinal()%3];
+                                        result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
+                                                bombWeightAlloc[Bomb.isGuardianInRange.ordinal()%3];
                                         if (opp_hero.getCurrentHP() <= 40)
                                             result[i][j][AbilityName.BLASTER_BOMB.ordinal()%3] +=
-                                                    actionWeightAlloc[Bomb.isLethalN.ordinal()];
+                                                    bombWeightAlloc[Bomb.isLethalN.ordinal()];
                                     }
                                 break;
                         }
@@ -316,21 +311,21 @@ public class Blaster {
                         case SENTRY:
                             if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
                                     && hero.getCurrentHP() < 51)
-                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryLOFandLethalandBeamOffCD.ordinal()];
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInSentryLOFandLethalandBeamOffCD.ordinal()];
                             if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
                                     && world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 8 && hero.getCurrentHP() < 31)
-                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryAttackRange.ordinal()];
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInSentryAttackRange.ordinal()];
                             break;
                         case BLASTER:
                             if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 6 && hero.getCurrentHP() < 41)
-                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
                             if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 5 && hero.getCurrentHP() < 21)
-                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
+                                result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
                             break;
                     }
                     for (Cell objcell : world.getMap().getObjectiveZone()) {
                         if (objcell.getRow() == i && objcell.getColumn() == j)
-                            result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInObjective.ordinal()];
+                            result[i][j][AbilityName.BLASTER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInObjective.ordinal()];
 
                     }
                     for (Hero enemyHero: world.getOppHeroes())
@@ -339,15 +334,15 @@ public class Blaster {
                         {
                             case HEALER:
                                 if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
-                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isHealerinLOF.ordinal()];
+                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=dodgeWeightAlloc[Dodge.isHealerinLOF.ordinal()];
                                 break;
                             case BLASTER:
                                 if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
-                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isBlasterinLOF.ordinal()];
+                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=dodgeWeightAlloc[Dodge.isBlasterinLOF.ordinal()];
                                 break;
                             case SENTRY:
                                 if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
-                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isSentryinLOF.ordinal()];
+                                    result[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]+=dodgeWeightAlloc[Dodge.isSentryinLOF.ordinal()];
                                 break;
                         }
                     }

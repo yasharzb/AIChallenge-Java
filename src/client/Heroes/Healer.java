@@ -162,7 +162,9 @@ public class Healer {
     private File attackFile=new File("Healer/Healer_Attack_Weight");
     private File healFile=new File("Healer/Healer_Heal_Weights");
     private File dodgeFile=new File("Healer/Healer_Dodge_Weights");
-    private double[] actionWeightAlloc=new double[17];
+    private double[] attackWeightAlloc=new double[17];
+    private double[] healWeightAlloc=new double[17];
+    private double[] dodgeWeightAlloc=new double[17];
     @SuppressWarnings("Duplicates")
     public double[][][] setActionWeight(Hero hero, World world,Cell objectivePoint) {
         int counter=0;
@@ -170,7 +172,7 @@ public class Healer {
         try {
             attackScanner=new Scanner(attackFile);
             while (attackScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=attackScanner.nextDouble();
+                attackWeightAlloc[counter]=attackScanner.nextDouble();
                 counter++;
             }
         }
@@ -181,7 +183,7 @@ public class Healer {
         try {
             healScanner=new Scanner(healFile);
             while (healScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=healScanner.nextDouble();
+                healWeightAlloc[counter]=healScanner.nextDouble();
                 counter++;
             }
         }
@@ -192,7 +194,7 @@ public class Healer {
         try {
             dodgeScanner=new Scanner(dodgeFile);
             while (dodgeScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=dodgeScanner.nextDouble();
+                dodgeWeightAlloc[counter]=dodgeScanner.nextDouble();
                 counter++;
             }
         }
@@ -201,21 +203,12 @@ public class Healer {
         }
         boolean heroPercussionFlag=false;
         double[][][] result = new double[world.getMap().getRowNum()][world.getMap().getColumnNum()][3];
-        for(int i=objectivePoint.getRow();i<objectivePoint.getRow()+9;i++){
-            for(int j=objectivePoint.getColumn();j<objectivePoint.getColumn()+9;j++){
+        for(int i=objectivePoint.getRow();i<objectivePoint.getRow()+5;i++){
+            for(int j=objectivePoint.getColumn();j<objectivePoint.getColumn()+5;j++){
                 if (world.getMap().getCell(i, j).isWall()) {
                     result[i][j][AbilityName.HEALER_ATTACK.ordinal()%3] = result[i][j][AbilityName.HEALER_HEAL.ordinal()%3]
                             = result[i][j][AbilityName.HEALER_DODGE.ordinal()%3] = -100D;
                     continue;
-                }
-                outer:
-                for (Hero my_hero : world.getMyHeroes()) {
-                    for (Hero opp_hero : world.getOppHeroes()) {
-                        if (opp_hero.getCurrentCell().equals(my_hero.getCurrentCell()))
-                            continue outer;
-                    }
-                    result[i][j][AbilityName.HEALER_ATTACK.ordinal()%3] = result[i][j][AbilityName.HEALER_HEAL.ordinal()%3]
-                            = result[i][j][AbilityName.HEALER_DODGE.ordinal()%3] = -100D;
                 }
 
                 //Attack
@@ -226,7 +219,7 @@ public class Healer {
                             if(world.manhattanDistance(opp_hero.getCurrentCell(),hero.getCurrentCell())<=4){
                                 if(opp_hero.getCurrentHP()<=25)
                                     result[i][j][AbilityName.HEALER_ATTACK.ordinal()%3] +=
-                                            actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                            attackWeightAlloc[Attack.isLethalN.ordinal()];
                             }
                     }
                 }
@@ -239,33 +232,33 @@ public class Healer {
                             if(world.manhattanDistance(my_hero.getCurrentCell(),hero.getCurrentCell())<=4){
                                 if(my_hero.getCurrentHP()<=50)
                                     result[i][j][AbilityName.HEALER_HEAL.ordinal()%3] +=
-                                            actionWeightAlloc[Heal.isTargetBelow50.ordinal()];
+                                            healWeightAlloc[Heal.isTargetBelow50.ordinal()];
                                 if(my_hero.getCurrentCell().isInObjectiveZone())
                                     result[i][j][AbilityName.HEALER_HEAL.ordinal()%3] +=
-                                            actionWeightAlloc[Heal.isTargetOnObjective.ordinal()];
+                                            healWeightAlloc[Heal.isTargetOnObjective.ordinal()];
                                 switch (my_hero.getName()){
                                     case SENTRY:
                                         result[i][j][AbilityName.HEALER_HEAL.ordinal()%3] +=
-                                                actionWeightAlloc[Heal.isTargetSentry.ordinal()];
+                                                healWeightAlloc[Heal.isTargetSentry.ordinal()];
                                         break;
                                     case BLASTER:
                                         result[i][j][AbilityName.HEALER_HEAL.ordinal()%3] +=
-                                                actionWeightAlloc[Heal.isTargetBlaster.ordinal()];
+                                                healWeightAlloc[Heal.isTargetBlaster.ordinal()];
                                         break;
                                     case GUARDIAN:
                                         result[i][j][AbilityName.HEALER_HEAL.ordinal()%3] +=
-                                                actionWeightAlloc[Heal.isTargetGuardian.ordinal()];
+                                                healWeightAlloc[Heal.isTargetGuardian.ordinal()];
                                         break;
                                     case HEALER:
                                         result[i][j][AbilityName.HEALER_HEAL.ordinal()%3] +=
-                                                actionWeightAlloc[Heal.isTargetHealer.ordinal()];
+                                                healWeightAlloc[Heal.isTargetHealer.ordinal()];
                                         break;
                                 }
                                 for(Hero opp_hero : world.getOppHeroes()){
                                     if(opp_hero.getName()== HeroName.SENTRY){
                                         if(world.isInVision(my_hero.getCurrentCell(),opp_hero.getCurrentCell()))
                                             result[i][j][AbilityName.HEALER_HEAL.ordinal()%3] +=
-                                                    actionWeightAlloc[Heal.isTargetInSentryLOF.ordinal()];
+                                                    healWeightAlloc[Heal.isTargetInSentryLOF.ordinal()];
                                     }
                                 }
                             }
@@ -280,21 +273,21 @@ public class Healer {
                         case SENTRY:
                             if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
                                     && hero.getCurrentHP() < 51)
-                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryLethalCondition.ordinal()];
+                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInSentryLethalCondition.ordinal()];
                             if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
                                     && world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 8 && hero.getCurrentHP() < 31)
-                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryLethalCondition.ordinal()];
+                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInSentryLethalCondition.ordinal()];
                             break;
                         case BLASTER:
                             if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 6 && hero.getCurrentHP() < 41)
-                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterLethalCondition.ordinal()];
+                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInBlasterLethalCondition.ordinal()];
                             if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 5 && hero.getCurrentHP() < 21)
-                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterLethalCondition.ordinal()];
+                                result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInBlasterLethalCondition.ordinal()];
                             break;
                     }
                     for (Cell objcell : world.getMap().getObjectiveZone()) {
                         if (objcell.getRow() == i && objcell.getColumn() == j)
-                            result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isOnObjective.ordinal()];
+                            result[i][j][AbilityName.HEALER_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isOnObjective.ordinal()];
 
                     }
                 }

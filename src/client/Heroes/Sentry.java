@@ -173,7 +173,9 @@ public class Sentry {
     private File attackFile=new File("Sentry/Sentry_Attack_Weights");
     private File beamFile=new File("Sentry/Sentry_Beam_Weights");
     private File dodgeFile=new File("Sentry/Sentry_Dodge_Weights");
-    private double[] actionWeightAlloc=new double[17];
+    private double[] attackWeightAlloc=new double[5];
+    private double[] beamWeightAlloc=new double[6];
+    private double[] dodgeWeightAlloc=new double[7];
     @SuppressWarnings("Duplicates")
     public double[][][] setActionWeight(Hero hero, World world,Cell objectivePoint) {
         int counter=0;
@@ -181,7 +183,7 @@ public class Sentry {
         try {
             attackScanner=new Scanner(attackFile);
             while (attackScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=attackScanner.nextDouble();
+                attackWeightAlloc[counter]=attackScanner.nextDouble();
                 counter++;
             }
         }
@@ -192,7 +194,7 @@ public class Sentry {
         try {
             beamScanner=new Scanner(beamFile);
             while (beamScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=beamScanner.nextDouble();
+                beamWeightAlloc[counter]=beamScanner.nextDouble();
                 counter++;
             }
         }
@@ -203,7 +205,7 @@ public class Sentry {
         try {
             dodgeScanner=new Scanner(dodgeFile);
             while (dodgeScanner.hasNextDouble()){
-                actionWeightAlloc[counter]=dodgeScanner.nextDouble();
+                dodgeWeightAlloc[counter]=dodgeScanner.nextDouble();
                 counter++;
             }
         }
@@ -212,21 +214,12 @@ public class Sentry {
         }
         boolean heroPercussionFlag=false;
         double[][][] result = new double[world.getMap().getRowNum()][world.getMap().getColumnNum()][3];
-        for(int i=objectivePoint.getRow();i<objectivePoint.getRow()+9;i++){
-            for(int j=objectivePoint.getColumn();j<objectivePoint.getColumn()+9;j++){
+        for(int i=objectivePoint.getRow();i<objectivePoint.getRow()+5;i++){
+            for(int j=objectivePoint.getColumn();j<objectivePoint.getColumn()+5;j++){
                 if (world.getMap().getCell(i, j).isWall()) {
                     result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] = result[i][j][AbilityName.SENTRY_RAY.ordinal()%3]
                             = result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3] = -100D;
                     continue;
-                }
-                outer:
-                for (Hero my_hero : world.getMyHeroes()) {
-                    for (Hero opp_hero : world.getOppHeroes()) {
-                        if (opp_hero.getCurrentCell().equals(my_hero.getCurrentCell()))
-                            continue outer;
-                    }
-                    result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] = result[i][j][AbilityName.SENTRY_RAY.ordinal()%3]
-                            = result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3] = -100D;
                 }
 
                 //Attack
@@ -239,18 +232,18 @@ public class Sentry {
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell()))
                                         if(world.manhattanDistance(opp_hero.getCurrentCell(),hero.getCurrentCell())<=7){
                                             result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isBlasterInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isBlasterInRange.ordinal()];
                                             if(opp_hero.getCurrentHP()<=30)
                                                 result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if(hero.getAbilities()[AbilityName.SENTRY_RAY.ordinal()%3].getRemCooldown() == 0)
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell())){
                                         result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                actionWeightAlloc[Beam.isBlasterInRange.ordinal()];
+                                                beamWeightAlloc[Beam.isBlasterInRange.ordinal()];
                                         if(opp_hero.getCurrentHP()<=50)
                                             result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                    actionWeightAlloc[Beam.isLethalN.ordinal()];
+                                                    beamWeightAlloc[Beam.isLethalN.ordinal()];
                                     }
                                 break;
                             case SENTRY:
@@ -258,18 +251,18 @@ public class Sentry {
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell()))
                                         if(world.manhattanDistance(opp_hero.getCurrentCell(),hero.getCurrentCell())<=7){
                                             result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isSentryInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isSentryInRange.ordinal()];
                                             if(opp_hero.getCurrentHP()<=30)
                                                 result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if(hero.getAbilities()[AbilityName.SENTRY_RAY.ordinal()%3].getRemCooldown() == 0)
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell())){
                                         result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                actionWeightAlloc[Beam.isSentryInRange.ordinal()];
+                                                beamWeightAlloc[Beam.isSentryInRange.ordinal()];
                                         if(opp_hero.getCurrentHP()<=50)
                                             result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                    actionWeightAlloc[Beam.isLethalN.ordinal()];
+                                                    beamWeightAlloc[Beam.isLethalN.ordinal()];
                                     }
                                 break;
                             case HEALER:
@@ -277,18 +270,18 @@ public class Sentry {
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell()))
                                         if(world.manhattanDistance(opp_hero.getCurrentCell(),hero.getCurrentCell())<=7){
                                             result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isHealerInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isHealerInRange.ordinal()];
                                             if(opp_hero.getCurrentHP()<=30)
                                                 result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if(hero.getAbilities()[AbilityName.SENTRY_RAY.ordinal()%3].getRemCooldown() == 0)
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell())){
                                         result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                actionWeightAlloc[Beam.isHealerInRange.ordinal()];
+                                                beamWeightAlloc[Beam.isHealerInRange.ordinal()];
                                         if(opp_hero.getCurrentHP()<=50)
                                             result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                    actionWeightAlloc[Beam.isLethalN.ordinal()];
+                                                    beamWeightAlloc[Beam.isLethalN.ordinal()];
                                     }
                                 break;
                             case GUARDIAN:
@@ -296,18 +289,18 @@ public class Sentry {
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell()))
                                         if(world.manhattanDistance(opp_hero.getCurrentCell(),hero.getCurrentCell())<=7){
                                             result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                    actionWeightAlloc[Attack.isGuardianInRange.ordinal()];
+                                                    attackWeightAlloc[Attack.isGuardianInRange.ordinal()];
                                             if(opp_hero.getCurrentHP()<=30)
                                                 result[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3] +=
-                                                        actionWeightAlloc[Attack.isLethalN.ordinal()];
+                                                        attackWeightAlloc[Attack.isLethalN.ordinal()];
                                         }
                                 if(hero.getAbilities()[AbilityName.SENTRY_RAY.ordinal()%3].getRemCooldown() == 0)
                                     if(world.isInVision(opp_hero.getCurrentCell(),hero.getCurrentCell())){
                                         result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                actionWeightAlloc[Beam.isGuardianInRange.ordinal()];
+                                                beamWeightAlloc[Beam.isGuardianInRange.ordinal()];
                                         if(opp_hero.getCurrentHP()<=50)
                                             result[i][j][AbilityName.SENTRY_RAY.ordinal()%3] +=
-                                                    actionWeightAlloc[Beam.isLethalN.ordinal()];
+                                                    beamWeightAlloc[Beam.isLethalN.ordinal()];
                                     }
                                 break;
                         }
@@ -321,21 +314,21 @@ public class Sentry {
                         case SENTRY:
                             if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
                                     && hero.getCurrentHP() < 51)
-                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryLOFandLethalandBeamOffCD.ordinal()];
+                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInSentryLOFandLethalandBeamOffCD.ordinal()];
                             if (world.isInVision(hero.getCurrentCell(), opp_hero.getCurrentCell())
                                     && world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 8 && hero.getCurrentHP() < 31)
-                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInSentryAttackRange.ordinal()];
+                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInSentryAttackRange.ordinal()];
                             break;
                         case BLASTER:
                             if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 6 && hero.getCurrentHP() < 41)
-                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
+                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
                             if (world.manhattanDistance(hero.getCurrentCell(), opp_hero.getCurrentCell()) < 5 && hero.getCurrentHP() < 21)
-                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
+                                result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isInBlasterRangeandBlastOffCD.ordinal()];
                             break;
                     }
                     for (Cell objcell : world.getMap().getObjectiveZone()) {
                         if (objcell.getRow() == i && objcell.getColumn() == j)
-                            result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += actionWeightAlloc[Dodge.isOnObjective.ordinal()];
+                            result[i][j][AbilityName.SENTRY_DODGE.ordinal() % 3] += dodgeWeightAlloc[Dodge.isOnObjective.ordinal()];
 
                     }
                     for (Hero enemyHero: world.getOppHeroes())
@@ -344,15 +337,15 @@ public class Sentry {
                         {
                             case HEALER:
                                 if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
-                                    result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isHealerinLOF.ordinal()];
+                                    result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]+=dodgeWeightAlloc[Dodge.isHealerinLOF.ordinal()];
                                 break;
                             case BLASTER:
                                 if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
-                                    result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isBlasterinLOF.ordinal()];
+                                    result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]+=dodgeWeightAlloc[Dodge.isBlasterinLOF.ordinal()];
                                 break;
                             case SENTRY:
                                 if (world.manhattanDistance(enemyHero.getCurrentCell(),hero.getCurrentCell())<6)
-                                    result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]+=actionWeightAlloc[Dodge.isSentryinLOF.ordinal()];
+                                    result[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]+=dodgeWeightAlloc[Dodge.isSentryinLOF.ordinal()];
                                 break;
                         }
                     }
