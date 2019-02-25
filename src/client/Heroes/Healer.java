@@ -161,7 +161,7 @@ public class Healer {
     }
     private File attackFile=new File("Healer/Healer_Attack_Weight");
     private File healFile=new File("Healer/Healer_Heal_Weights");
-    private File dodgeFile=new File("Healer_Dodge_Weights");
+    private File dodgeFile=new File("Healer/Healer_Dodge_Weights");
     private double[] actionWeightAlloc=new double[17];
     @SuppressWarnings("Duplicates")
     public double[][][] setActionWeight(Hero hero, World world) {

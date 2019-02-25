@@ -55,6 +55,12 @@ public class AI
         Cell nextCell;
         for (Hero hero : world.getMyHeroes())
         {
+            if(hero.getCurrentCell().isInObjectiveZone()&&
+                    (world.manhattanDistance(world.getOppHeroes()[0].getCurrentCell(),hero.getCurrentCell())<=4||
+                     world.manhattanDistance(world.getOppHeroes()[1].getCurrentCell(),hero.getCurrentCell())<=4||
+                     world.manhattanDistance(world.getOppHeroes()[2].getCurrentCell(),hero.getCurrentCell())<=4||
+                     world.manhattanDistance(world.getOppHeroes()[3].getCurrentCell(),hero.getCurrentCell())<=4))
+                continue;
             nextCell=hero.getCurrentCell();
             if(hero.getId()%2==1)
                 objectivePoint=objectivePoints[hero.getId()/2];
@@ -157,113 +163,150 @@ public class AI
 
     public void actionTurn(World world) {
         System.out.println("action started");
+        System.out.println(world.getAP());
         draw_map(world);
-        double actionWeight=0;
+        double actionWeight=0D;
         Cell targetCell=world.getMap().getCell(0,0);
         int actionnaireID=0;
         AbilityName abilityName=AbilityName.BLASTER_ATTACK;
+        System.out.println("Starting the for loop.");
+        if(world.getAP()<15)
+            return;
         for(Hero my_hero : world.getMyHeroes()){
-            if(my_hero.getCurrentCell().isInObjectiveZone())
-                continue;
+            System.out.println("Loop cycle");
             switch (my_hero.getName()){
                 case HEALER:
+                    System.out.println("Healer Case");
                     for(int i=0;i<world.getMap().getRowNum();i++){
                         for(int j=0;j<world.getMap().getColumnNum();j++){
                             if(new Healer().setActionWeight(my_hero,world)[i][j][AbilityName.HEALER_ATTACK.ordinal()%3]>actionWeight){
+                                System.out.println("Healer_Attack B");
                                 actionWeight=new Healer().setActionWeight(my_hero,world)[i][j][AbilityName.HEALER_ATTACK.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.HEALER_ATTACK;
+                                System.out.println("Healer_Attack A");
                             }
                             if(new Healer().setActionWeight(my_hero,world)[i][j][AbilityName.HEALER_HEAL.ordinal()%3]>actionWeight){
+                                System.out.println("Healer_Heal B");
                                 actionWeight=new Healer().setActionWeight(my_hero,world)[i][j][AbilityName.HEALER_HEAL.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.HEALER_HEAL;
+                                System.out.println("Healer_Heal A");
                             }
                             if(new Healer().setActionWeight(my_hero,world)[i][j][AbilityName.HEALER_DODGE.ordinal()%3]>actionWeight){
+                                System.out.println("Healer_Dodge B");
                                 actionWeight=new Healer().setActionWeight(my_hero,world)[i][j][AbilityName.HEALER_DODGE.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.HEALER_DODGE;
+                                System.out.println("Healer_Dodge A");
                             }
                         }
                     }
                     break;
                 case GUARDIAN:
+                    System.out.println("Guardian Case");
                     for(int i=0;i<world.getMap().getRowNum();i++){
                         for(int j=0;j<world.getMap().getColumnNum();j++){
                             if(new Guardian().setActionWeight(my_hero,world)[i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3]>actionWeight){
+                                System.out.println("Guardian_Attack B");
                                 actionWeight=new Guardian().setActionWeight(my_hero,world)[i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.GUARDIAN_ATTACK;
+                                System.out.println("Guardian_Attack A");
                             }
                             if(new Guardian().setActionWeight(my_hero,world)[i][j][AbilityName.GUARDIAN_FORTIFY.ordinal()%3]>actionWeight){
+                                System.out.println("Guardian_Fortify B");
                                 actionWeight=new Guardian().setActionWeight(my_hero,world)[i][j][AbilityName.GUARDIAN_FORTIFY.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.GUARDIAN_FORTIFY;
+                                System.out.println("Guardian_Fortify A");
                             }
                             if(new Guardian().setActionWeight(my_hero,world)[i][j][AbilityName.GUARDIAN_DODGE.ordinal()%3]>actionWeight){
+                                System.out.println("Guardian_Dodge B");
                                 actionWeight=new Guardian().setActionWeight(my_hero,world)[i][j][AbilityName.GUARDIAN_DODGE.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.GUARDIAN_DODGE;
+                                System.out.println("Guardian_Dodge A");
                             }
                         }
                     }
                     break;
                 case BLASTER:
+                    System.out.println("Blaster Case");
                     for(int i=0;i<world.getMap().getRowNum();i++){
                         for(int j=0;j<world.getMap().getColumnNum();j++){
                             if(new Blaster().setActionWeight(my_hero,world)[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3]>actionWeight){
+                                System.out.println("Blaster_Attack B");
                                 actionWeight=new Blaster().setActionWeight(my_hero,world)[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.BLASTER_ATTACK;
+                                System.out.println("Blaster_Attack A");
                             }
                             if(new Blaster().setActionWeight(my_hero,world)[i][j][AbilityName.BLASTER_BOMB.ordinal()%3]>actionWeight){
+                                System.out.println("Blaster_Bomb B");
                                 actionWeight=new Blaster().setActionWeight(my_hero,world)[i][j][AbilityName.BLASTER_BOMB.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.BLASTER_BOMB;
+                                System.out.println("Blaster_Bomb A");
                             }
                             if(new Blaster().setActionWeight(my_hero,world)[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]>actionWeight){
+                                System.out.println("Blaster_Dodge B");
                                 actionWeight=new Blaster().setActionWeight(my_hero,world)[i][j][AbilityName.BLASTER_DODGE.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.BLASTER_DODGE;
+                                System.out.println("Blaster_Dodge A");
                             }
                         }
                     }
                     break;
                 case SENTRY:
+                    System.out.println("Sentry Case");
                     for(int i=0;i<world.getMap().getRowNum();i++){
                         for(int j=0;j<world.getMap().getColumnNum();j++){
                             if(new Sentry().setActionWeight(my_hero,world)[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3]>actionWeight){
+                                System.out.println("Sentry_Attack B");
                                 actionWeight=new Sentry().setActionWeight(my_hero,world)[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.SENTRY_ATTACK;
+                                System.out.println("Sentry_Attack A");
                             }
                             if(new Sentry().setActionWeight(my_hero,world)[i][j][AbilityName.SENTRY_RAY.ordinal()%3]>actionWeight){
+                                System.out.println("Sentry_Ray B");
                                 actionWeight=new Sentry().setActionWeight(my_hero,world)[i][j][AbilityName.SENTRY_RAY.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.SENTRY_RAY;
+                                System.out.println("Sentry_Ray A");
                             }
                             if(new Sentry().setActionWeight(my_hero,world)[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]>actionWeight){
+                                System.out.println("Sentry_Dodge B");
                                 actionWeight=new Sentry().setActionWeight(my_hero,world)[i][j][AbilityName.SENTRY_DODGE.ordinal()%3];
                                 targetCell=world.getMap().getCell(i,j);
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.SENTRY_DODGE;
+                                System.out.println("Sentry_Dodge A");
                             }
                         }
                     }
                     break;
+                default:
+                    System.out.println("Gooz pich!");
+                    break;
             }
         }
+        System.out.println("Target Cell: "+targetCell.getRow()+" , "+targetCell.getColumn());
+        System.out.println("Ability name: "+abilityName);
+        System.out.println("Actionnaire ID: "+actionnaireID);
         if(targetCell!=world.getMap().getCell(0,0)){
             world.castAbility(world.getHero(actionnaireID),abilityName,targetCell);
         }
