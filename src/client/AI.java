@@ -44,7 +44,7 @@ public class AI
     public void pickTurn(World world)
     {
         System.out.println("pick started");
-        world.pickHero(HeroName.values()[world.getCurrentTurn()]);
+        world.pickHero(HeroName.BLASTER);
         System.out.println(HeroName.values()[world.getCurrentTurn()]);
     }
     public void moveTurn(World world)
@@ -55,6 +55,8 @@ public class AI
         Cell nextCell;
         for (Hero hero : world.getMyHeroes())
         {
+            if(hero.getCurrentCell().getRow()==-1)
+                continue;
             if(hero.getCurrentCell().isInObjectiveZone()&&
                     (world.manhattanDistance(world.getOppHeroes()[0].getCurrentCell(),hero.getCurrentCell())<=4||
                      world.manhattanDistance(world.getOppHeroes()[1].getCurrentCell(),hero.getCurrentCell())<=4||
@@ -68,11 +70,12 @@ public class AI
                 objectivePoint=objectivePoints[hero.getId()/2];
             switch (hero.getName()){
                 case HEALER:
+                    System.out.println("HRow: "+hero.getCurrentCell().getRow()+"HCol: "+hero.getCurrentCell().getColumn());
                     nextCellWeight=new Healer().setMovementWeight(hero,world,objectivePoint)
                             [hero.getCurrentCell().getRow()][hero.getCurrentCell().getColumn()];
-                    for (int i=hero.getCurrentCell().getRow()-1;i<=hero.getCurrentCell().getRow()+1;i++){
+                    for (int i = Math.max(hero.getCurrentCell().getRow() - 1,0); i <= Math.min(hero.getCurrentCell().getRow() + 1,world.getMap().getRowNum()); i++) {
                         outer:
-                        for (int j=hero.getCurrentCell().getColumn()-1;j<=hero.getCurrentCell().getColumn()+1;j++){
+                        for (int j = Math.max(hero.getCurrentCell().getColumn() - 1,0); j <= Math.min(hero.getCurrentCell().getColumn() + 1,world.getMap().getColumnNum()); j++) {
                             if(i==hero.getCurrentCell().getRow()||j==hero.getCurrentCell().getColumn()){
                                 for(Hero my_hero : world.getMyHeroes()){
                                     if(my_hero.getCurrentCell().equals(world.getMap().getCell(i,j)))
@@ -89,11 +92,12 @@ public class AI
                     }
                     break;
                 case SENTRY:
+                    System.out.println("SRow: "+hero.getCurrentCell().getRow()+"SCol: "+hero.getCurrentCell().getColumn());
                     nextCellWeight=new Sentry().setMovementWeight(hero,world,objectivePoint)
                             [hero.getCurrentCell().getRow()][hero.getCurrentCell().getColumn()];
-                    for (int i=hero.getCurrentCell().getRow()-1;i<=hero.getCurrentCell().getRow()+1;i++){
+                    for (int i = Math.max(hero.getCurrentCell().getRow() - 1,0); i <= Math.min(hero.getCurrentCell().getRow() + 1,world.getMap().getRowNum()); i++) {
                         outer:
-                        for (int j=hero.getCurrentCell().getColumn()-1;j<=hero.getCurrentCell().getColumn()+1;j++){
+                        for (int j = Math.max(hero.getCurrentCell().getColumn() - 1,0); j <= Math.min(hero.getCurrentCell().getColumn() + 1,world.getMap().getColumnNum()); j++) {
                             if(i==hero.getCurrentCell().getRow()||j==hero.getCurrentCell().getColumn()){
                                 for(Hero my_hero : world.getMyHeroes()){
                                     if(my_hero.getCurrentCell().equals(world.getMap().getCell(i,j)))
@@ -110,11 +114,12 @@ public class AI
                     }
                     break;
                 case GUARDIAN:
+                    System.out.println("GRow: "+hero.getCurrentCell().getRow()+"GCol: "+hero.getCurrentCell().getColumn());
                     nextCellWeight=new Guardian().setMovementWeight(hero,world,objectivePoint)
                             [hero.getCurrentCell().getRow()][hero.getCurrentCell().getColumn()];
-                    for (int i=hero.getCurrentCell().getRow()-1;i<=hero.getCurrentCell().getRow()+1;i++){
+                    for (int i = Math.max(hero.getCurrentCell().getRow() - 1,0); i <= Math.min(hero.getCurrentCell().getRow() + 1,world.getMap().getRowNum()); i++) {
                         outer:
-                        for (int j=hero.getCurrentCell().getColumn()-1;j<=hero.getCurrentCell().getColumn()+1;j++){
+                        for (int j = Math.max(hero.getCurrentCell().getColumn() - 1,0); j <= Math.min(hero.getCurrentCell().getColumn() + 1,world.getMap().getColumnNum()); j++) {
                             if(i==hero.getCurrentCell().getRow()||j==hero.getCurrentCell().getColumn()){
                                 for(Hero my_hero : world.getMyHeroes()){
                                     if(my_hero.getCurrentCell().equals(world.getMap().getCell(i,j)))
@@ -131,11 +136,12 @@ public class AI
                     }
                     break;
                 case BLASTER:
+                    System.out.println("BRow: "+hero.getCurrentCell().getRow()+"BCol: "+hero.getCurrentCell().getColumn());
                     nextCellWeight=new Blaster().setMovementWeight(hero,world,objectivePoint)
                             [hero.getCurrentCell().getRow()][hero.getCurrentCell().getColumn()];
-                    for (int i=hero.getCurrentCell().getRow()-1;i<=hero.getCurrentCell().getRow()+1;i++){
+                    for (int i = Math.max(hero.getCurrentCell().getRow() - 1,0); i <= Math.min(hero.getCurrentCell().getRow() + 1,world.getMap().getRowNum()); i++) {
                         outer:
-                        for (int j=hero.getCurrentCell().getColumn()-1;j<=hero.getCurrentCell().getColumn()+1;j++){
+                        for (int j = Math.max(hero.getCurrentCell().getColumn() - 1,0); j <= Math.min(hero.getCurrentCell().getColumn() + 1,world.getMap().getColumnNum()); j++) {
                             if(i==hero.getCurrentCell().getRow()||j==hero.getCurrentCell().getColumn()){
                                 for(Hero my_hero : world.getMyHeroes()){
                                     if(my_hero.getCurrentCell().equals(world.getMap().getCell(i,j)))
@@ -179,29 +185,46 @@ public class AI
         Cell targetCell=world.getMap().getCell(0,0);
         int actionnaireID=0;
         AbilityName abilityName=AbilityName.BLASTER_ATTACK;
-        System.out.println("Starting the for loop.");
         for(Hero my_hero : world.getMyHeroes()){
-            System.out.println("Loop cycle");
+            if(my_hero.getCurrentCell().getRow()==-1)
+                continue;
             switch (my_hero.getName()){
                 case HEALER:
-                    System.out.println("Healer Case");
-                    for(int i=objPoint.getRow();i<objPoint.getRow()+5;i++){
-                        for(int j=objPoint.getColumn();j<objPoint.getColumn()+5;j++){
-                            System.out.println("Healer_Attack: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_ATTACK.ordinal()%3]);
-                            System.out.println("Healer_Heal: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_HEAL.ordinal()%3]);
-                            System.out.println("Healer_Dodge: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_DODGE.ordinal()%3]);
-                            if(new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_ATTACK.ordinal()%3]>actionWeight){
-                                actionWeight=new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_ATTACK.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
-                                actionnaireID=my_hero.getId();
-                                abilityName=AbilityName.HEALER_ATTACK;
-                            }
-                            if(new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_HEAL.ordinal()%3]>actionWeight){
-                                actionWeight=new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_HEAL.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
-                                actionnaireID=my_hero.getId();
-                                abilityName=AbilityName.HEALER_HEAL;
-                            }
+                    for(Hero opp_hero : world.getOppHeroes()){
+                        if(!opp_hero.getCurrentCell().isInVision())
+                            continue;
+                        System.out.println("Healer Case");
+                        System.out.println("Healer_Attack: "+new Healer().setActionWeight(my_hero,world,objPoint)
+                                [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                [AbilityName.HEALER_ATTACK.ordinal()%3]);
+                        if(new Healer().setActionWeight(my_hero,world,objPoint)
+                                [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                [AbilityName.HEALER_ATTACK.ordinal()%3]>actionWeight){
+                            actionWeight=new Healer().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.HEALER_ATTACK.ordinal()%3];
+                            targetCell=opp_hero.getCurrentCell();
+                            actionnaireID=my_hero.getId();
+                            abilityName=AbilityName.HEALER_ATTACK;
+                        }
+                    }
+                    for(Hero other_hero : world.getMyHeroes()){
+                        if(other_hero.getCurrentCell().getRow()==-1)
+                            continue;
+                        System.out.println("Healer_Heal: "+new Healer().setActionWeight(my_hero,world,objPoint)
+                                [other_hero.getCurrentCell().getRow()][other_hero.getCurrentCell().getColumn()]
+                                [AbilityName.HEALER_HEAL.ordinal()%3]);
+                        if(new Healer().setActionWeight(my_hero,world,objPoint)
+                                [other_hero.getCurrentCell().getRow()][other_hero.getCurrentCell().getColumn()]
+                                [AbilityName.HEALER_HEAL.ordinal()%3]>actionWeight){
+                            actionWeight=new Healer().setActionWeight(my_hero,world,objPoint)
+                                    [other_hero.getCurrentCell().getRow()][other_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.HEALER_HEAL.ordinal()%3];
+                            targetCell=other_hero.getCurrentCell();
+                            actionnaireID=my_hero.getId();
+                            abilityName=AbilityName.HEALER_HEAL;
+                        }
+                    }
 /*
                             if(new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.HEALER_DODGE.ordinal()%3]>actionWeight){
                                 System.out.println("Healer_Dodge B");
@@ -212,28 +235,63 @@ public class AI
                                 System.out.println("Healer_Dodge A");
                             }
 */
-                        }
-                    }
                     break;
                 case GUARDIAN:
                     System.out.println("Guardian Case");
-                    for(int i=objPoint.getRow();i<objPoint.getRow()+5;i++){
-                        for(int j=objPoint.getColumn();j<objPoint.getColumn()+5;j++){
-                            System.out.println("Guardian_Attack: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3]);
-                            System.out.println("Guardian_Fortify: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_FORTIFY.ordinal()%3]);
-                            System.out.println("Guardian_Dodge: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_DODGE.ordinal()%3]);
-                            if(new Guardian().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3]>actionWeight){
-                                actionWeight=new Guardian().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
+                    for(Hero opp_hero : world.getOppHeroes()){
+                        if(!opp_hero.getCurrentCell().isInVision())
+                            continue;
+                        if(world.manhattanDistance(opp_hero.getCurrentCell(),my_hero.getCurrentCell())<=1){
+                            System.out.println("Guardian_Attack: "+new Guardian().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.GUARDIAN_ATTACK.ordinal()%3]);
+                            if(new Guardian().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.GUARDIAN_ATTACK.ordinal()%3]>actionWeight){
+                                actionWeight=new Guardian().setActionWeight(my_hero,world,objPoint)
+                                        [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                        [AbilityName.GUARDIAN_ATTACK.ordinal()%3];
+                                targetCell=opp_hero.getCurrentCell();
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.GUARDIAN_ATTACK;
                             }
-                            if(new Guardian().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_FORTIFY.ordinal()%3]>actionWeight){
-                                actionWeight=new Guardian().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_FORTIFY.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
-                                actionnaireID=my_hero.getId();
-                                abilityName=AbilityName.GUARDIAN_FORTIFY;
+                        }
+                        else if(world.manhattanDistance(opp_hero.getCurrentCell(),my_hero.getCurrentCell())<=2){
+                            outer:
+                            for(int i=opp_hero.getCurrentCell().getRow()-1;i<=opp_hero.getCurrentCell().getRow()+1;i++){
+                                for(int j=opp_hero.getCurrentCell().getColumn()-1;j<=opp_hero.getCurrentCell().getColumn()+1;j++){
+                                    System.out.println("Guardian_Attack: "+new Guardian().setActionWeight(my_hero,world,objPoint)
+                                            [i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3]);
+                                    if(new Guardian().setActionWeight(my_hero,world,objPoint)
+                                            [i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3]>actionWeight){
+                                        actionWeight=new Guardian().setActionWeight(my_hero,world,objPoint)
+                                                [i][j][AbilityName.GUARDIAN_ATTACK.ordinal()%3];
+                                        targetCell=world.getMap().getCell(i,j);
+                                        actionnaireID=my_hero.getId();
+                                        abilityName=AbilityName.GUARDIAN_ATTACK;
+                                        break outer;
+                                    }
+                                }
                             }
+                        }
+                    }
+                    for(Hero other_hero : world.getMyHeroes()){
+                        if(other_hero.getCurrentCell().getRow()==-1)
+                            continue;
+                        System.out.println("Guardian_Fortify: "+new Guardian().setActionWeight(my_hero,world,objPoint)
+                                [other_hero.getCurrentCell().getRow()][other_hero.getCurrentCell().getColumn()]
+                                [AbilityName.GUARDIAN_FORTIFY.ordinal()%3]);
+                        if(new Guardian().setActionWeight(my_hero,world,objPoint)
+                                [other_hero.getCurrentCell().getRow()][other_hero.getCurrentCell().getColumn()]
+                                [AbilityName.GUARDIAN_FORTIFY.ordinal()%3]>actionWeight){
+                            actionWeight=new Guardian().setActionWeight(my_hero,world,objPoint)
+                                    [other_hero.getCurrentCell().getRow()][other_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.GUARDIAN_FORTIFY.ordinal()%3];
+                            targetCell=other_hero.getCurrentCell();
+                            actionnaireID=my_hero.getId();
+                            abilityName=AbilityName.GUARDIAN_FORTIFY;
+                        }
+                    }
 /*
                             if(new Guardian().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.GUARDIAN_DODGE.ordinal()%3]>actionWeight){
                                 System.out.println("Guardian_Dodge B");
@@ -243,29 +301,84 @@ public class AI
                                 abilityName=AbilityName.GUARDIAN_DODGE;
                                 System.out.println("Guardian_Dodge A");
                             }
-*/
-                        }
-                    }
+                            */
                     break;
                 case BLASTER:
                     System.out.println("Blaster Case");
-                    for(int i=objPoint.getRow();i<objPoint.getRow()+5;i++){
-                        for(int j=objPoint.getColumn();j<objPoint.getColumn()+5;j++){
-                            System.out.println("Blaster_Attack: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3]);
-                            System.out.println("Blaster_Bomb: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_BOMB.ordinal()%3]);
-                            System.out.println("Blaster_Dodge: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]);
-                            if(new Blaster().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3]>actionWeight){
-                                actionWeight=new Blaster().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_ATTACK.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
+                    for(Hero opp_hero : world.getOppHeroes()){
+                        if(!opp_hero.getCurrentCell().isInVision())
+                            continue;
+                        if(world.manhattanDistance(opp_hero.getCurrentCell(),my_hero.getCurrentCell())<=4){
+                            System.out.println("Blaster_Attack: "+new Blaster().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.BLASTER_ATTACK.ordinal()%3]);
+                            if(new Blaster().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.BLASTER_ATTACK.ordinal()%3]>actionWeight){
+                                actionWeight=new Blaster().setActionWeight(my_hero,world,objPoint)
+                                        [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                        [AbilityName.BLASTER_ATTACK.ordinal()%3];
+                                targetCell=opp_hero.getCurrentCell();
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.BLASTER_ATTACK;
                             }
-                            if(new Blaster().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_BOMB.ordinal()%3]>actionWeight){
-                                actionWeight=new Blaster().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_BOMB.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
+                        }
+                        else if(world.manhattanDistance(opp_hero.getCurrentCell(),my_hero.getCurrentCell())<=5){
+                            outer:
+                            for(int i=opp_hero.getCurrentCell().getRow()-1;i<=opp_hero.getCurrentCell().getRow()+1;i++){
+                                for(int j=opp_hero.getCurrentCell().getColumn()-1;j<=opp_hero.getCurrentCell().getColumn()+1;j++){
+                                    if(new Blaster().setActionWeight(my_hero,world,objPoint)
+                                            [i][j][AbilityName.BLASTER_ATTACK.ordinal()%3]>actionWeight){
+                                        System.out.println("Blaster_Attack: "+new Blaster().setActionWeight(my_hero,world,objPoint)
+                                                [i][j][AbilityName.BLASTER_ATTACK.ordinal()%3]);
+                                        actionWeight=new Blaster().setActionWeight(my_hero,world,objPoint)
+                                                [i][j][AbilityName.BLASTER_ATTACK.ordinal()%3];
+                                        targetCell=world.getMap().getCell(i,j);
+                                        actionnaireID=my_hero.getId();
+                                        abilityName=AbilityName.BLASTER_ATTACK;
+                                        break outer;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for(Hero opp_hero : world.getOppHeroes()){
+                        if(!opp_hero.getCurrentCell().isInVision())
+                            continue;
+                        if(world.manhattanDistance(opp_hero.getCurrentCell(),my_hero.getCurrentCell())<=5){
+                            System.out.println("Blaster_Bomb: "+new Blaster().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.BLASTER_BOMB.ordinal()%3]);
+                            if(new Blaster().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.BLASTER_BOMB.ordinal()%3]>actionWeight){
+                                actionWeight=new Blaster().setActionWeight(my_hero,world,objPoint)
+                                        [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                        [AbilityName.BLASTER_BOMB.ordinal()%3];
+                                targetCell=opp_hero.getCurrentCell();
                                 actionnaireID=my_hero.getId();
                                 abilityName=AbilityName.BLASTER_BOMB;
                             }
+                        }
+                        else if(world.manhattanDistance(opp_hero.getCurrentCell(),my_hero.getCurrentCell())<=7){
+                            outer:
+                            for(int i=opp_hero.getCurrentCell().getRow()-2;i<=opp_hero.getCurrentCell().getRow()+2;i++){
+                                for(int j=opp_hero.getCurrentCell().getColumn()-2;j<=opp_hero.getCurrentCell().getColumn()+2;j++){
+                                    if(new Blaster().setActionWeight(my_hero,world,objPoint)
+                                            [i][j][AbilityName.BLASTER_BOMB.ordinal()%3]>actionWeight){
+                                        System.out.println("Blaster_Bomb: "+new Blaster().setActionWeight(my_hero,world,objPoint)
+                                                [i][j][AbilityName.BLASTER_BOMB.ordinal()%3]);
+                                        actionWeight=new Blaster().setActionWeight(my_hero,world,objPoint)
+                                                [i][j][AbilityName.BLASTER_BOMB.ordinal()%3];
+                                        targetCell=world.getMap().getCell(i,j);
+                                        actionnaireID=my_hero.getId();
+                                        abilityName=AbilityName.BLASTER_BOMB;
+                                        break outer;
+                                    }
+                                }
+                            }
+                        }
+                    }
 /*
                             if(new Blaster().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.BLASTER_DODGE.ordinal()%3]>actionWeight){
                                 System.out.println("Blaster_Dodge B");
@@ -276,28 +389,40 @@ public class AI
                                 System.out.println("Blaster_Dodge A");
                             }
 */
-                        }
-                    }
                     break;
                 case SENTRY:
                     System.out.println("Sentry Case");
-                    for(int i=objPoint.getRow();i<objPoint.getRow()+5;i++){
-                        for(int j=objPoint.getColumn();j<objPoint.getColumn()+5;j++){
-                            System.out.println("Sentry_Attack: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3]);
-                            System.out.println("Sentry_Ray: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_RAY.ordinal()%3]);
-                            System.out.println("Sentry_Dodge: "+new Healer().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]);
-                            if(new Sentry().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3]>actionWeight){
-                                actionWeight=new Sentry().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_ATTACK.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
-                                actionnaireID=my_hero.getId();
-                                abilityName=AbilityName.SENTRY_ATTACK;
-                            }
-                            if(new Sentry().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_RAY.ordinal()%3]>actionWeight){
-                                actionWeight=new Sentry().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_RAY.ordinal()%3];
-                                targetCell=world.getMap().getCell(i,j);
-                                actionnaireID=my_hero.getId();
-                                abilityName=AbilityName.SENTRY_RAY;
-                            }
+                    for(Hero opp_hero : world.getOppHeroes()){
+                        if(!opp_hero.getCurrentCell().isInVision())
+                            continue;
+                        System.out.println("Cell: "+opp_hero.getCurrentCell().getRow()+" , "+opp_hero.getCurrentCell().getColumn());
+                        System.out.println("Sentry_Attack: "+new Sentry().setActionWeight(my_hero,world,objPoint)
+                                [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                [AbilityName.SENTRY_ATTACK.ordinal()%3]);
+                        if(new Sentry().setActionWeight(my_hero,world,objPoint)
+                                [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                [AbilityName.SENTRY_ATTACK.ordinal()%3]>actionWeight){
+                            actionWeight=new Sentry().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.SENTRY_ATTACK.ordinal()%3];
+                            targetCell=opp_hero.getCurrentCell();
+                            actionnaireID=my_hero.getId();
+                            abilityName=AbilityName.SENTRY_ATTACK;
+                        }
+                        System.out.println("Sentry_Ray: "+new Sentry().setActionWeight(my_hero,world,objPoint)
+                                [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                [AbilityName.SENTRY_RAY.ordinal()%3]);
+                        if(new Sentry().setActionWeight(my_hero,world,objPoint)
+                                [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                [AbilityName.SENTRY_RAY.ordinal()%3]>actionWeight){
+                            actionWeight=new Sentry().setActionWeight(my_hero,world,objPoint)
+                                    [opp_hero.getCurrentCell().getRow()][opp_hero.getCurrentCell().getColumn()]
+                                    [AbilityName.SENTRY_RAY.ordinal()%3];
+                            targetCell=opp_hero.getCurrentCell();
+                            actionnaireID=my_hero.getId();
+                            abilityName=AbilityName.SENTRY_RAY;
+                        }
+                    }
 /*
                             if(new Sentry().setActionWeight(my_hero,world,objPoint)[i][j][AbilityName.SENTRY_DODGE.ordinal()%3]>actionWeight){
                                 System.out.println("Sentry_Dodge B");
@@ -308,11 +433,6 @@ public class AI
                                 System.out.println("Sentry_Dodge A");
                             }
 */
-                        }
-                    }
-                    break;
-                default:
-                    System.out.println("Gooz pich!");
                     break;
             }
         }
